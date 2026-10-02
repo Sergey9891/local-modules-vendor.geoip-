@@ -1,17 +1,15 @@
 <?php
+declare(strict_types=1);
+
 namespace Vendor\Geoip\Provider;
 
 interface GeoIpProviderInterface
 {
-    /**
-     * Возвращает уникальное кодовое имя провайдера
-     */
     public function getName(): string;
 
     /**
-     * Выполняет запрос к API провайдера.
-     * Возвращает массив ['country' => string, 'city' => string] или null при сбое.
+     * Выполняет поиск геоданных по IP
+     * @return array{country: string, city: string}|null
      */
     public function lookup(string $ip): ?array;
 }
-
