@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Vendor\Geoip\Provider;
 
 use Vendor\Geoip\Service\HttpClient;
@@ -31,8 +33,8 @@ class IpApiOutProvider implements GeoIpProviderInterface
         }
 
         return [
-            'country' => $data['country'] ?? '',
-            'city' => $data['city'] ?? ''
+            'country' => (string)($data['country'] ?? ''),
+            'city' => (string)($data['city'] ?? '')
         ];
     }
 }
