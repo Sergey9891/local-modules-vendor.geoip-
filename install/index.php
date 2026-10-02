@@ -5,7 +5,7 @@ use Bitrix\Highloadblock\HighloadBlockTable;
 
 Loc.loadMessages(__FILE__);
 
-class vendor_geoip extends CModule
+class VendorGeoip extends CModule
 {
     public $MODULE_ID = 'vendor.geoip';
     public $MODULE_VERSION;
