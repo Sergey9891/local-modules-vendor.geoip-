@@ -1,45 +1,38 @@
 <?php
-namespace GeoIpSearch\lib\providers;
+namespace Vendor\Geoip\Provider;
 
-use GeoIpSearch\lib\ProviderInterface;
-use Psr\Http\Client\ClientInterface;
-use Psr\Log\LoggerInterface;
+use Vendor\Geoip\Service\HttpClient;
 
-class SypexGeoProvider implements ProviderInterface
+class SypexGeoProvider implements GeoIpProviderInterface
 {
-    private $client;
-    private $logger;
+    private const API_URL = 'https://sypexgeo.net';
+    private HttpClient $httpClient;
 
-    public function __construct(ClientInterface $client, LoggerInterface $logger)
+    public function __construct(HttpClient $httpClient)
     {
-        $this->client = $client;
-        $this->logger = $logger;
+        $this->httpClient = $httpClient;
     }
 
-    public function getGeoData(string $ip): ?array
+    public function getName(): string
     {
-        $url = "https://api.sypexgeo.net/json/{$ip}";
-        try {
-            $response = $this->client->request('GET', $url);
-            if ($response->getStatusCode() !== 200) {
-                $this->logger->warning("SypexGeo API returned status " . $response->getStatusCode());
-                return null;
-            }
-            $body = $response->getBody()->getContents();
-            $data = json_decode($body, true);
-            if (!$data) {
-                $this->logger->warning("Invalid response from SypexGeo");
-                return null;
-            }
-            return [
-                'country' => $data['country']['name_en'] ?? null,
-                'city' => $data['city']['name_en'] ?? null,
-                'lat' => $data['city']['lat'] ?? null,
-                'lon' => $data['city']['lon'] ?? null,
-            ];
-        } catch (\Exception $e) {
-            $this->logger->error("Error fetching SypexGeo data: " . $e->getMessage());
+        return 'sypexgeo';
+    }
+
+    public function lookup(string $ip): ?array
+    {
+        $response = $this->httpClient->get(self::API_URL . $ip);
+        if (!$response) {
             return null;
         }
+
+        $data = json_decode($response, true);
+        if (!isset($data['country']['name_ru'])) {
+            return null;
+        }
+
+        return [
+            'country' => $data['country']['name_ru'] ?? '',
+            'city' => $data['city']['name_ru'] ?? ''
+        ];
     }
 }
