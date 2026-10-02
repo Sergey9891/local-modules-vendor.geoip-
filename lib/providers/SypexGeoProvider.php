@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Vendor\Geoip\Provider;
 
 use Vendor\Geoip\Service\HttpClient;
@@ -31,8 +33,8 @@ class SypexGeoProvider implements GeoIpProviderInterface
         }
 
         return [
-            'country' => $data['country']['name_ru'] ?? '',
-            'city' => $data['city']['name_ru'] ?? ''
+            'country' => (string)($data['country']['name_ru'] ?? ''),
+            'city' => (string)($data['city']['name_ru'] ?? '')
         ];
     }
 }
