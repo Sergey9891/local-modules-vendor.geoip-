@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Vendor\Geoip\Service;
 
 use Bitrix\Main\Web\HttpClient as BitrixHttpClient;
@@ -7,7 +9,7 @@ class HttpClient
 {
     private array $options;
 
-    public function __construct(array $options = ['timeout' => 3, 'socketTimeout' => 3])
+    public function __construct(array $options = ['timeout' => 2, 'socketTimeout' => 2])
     {
         $this->options = $options;
     }
