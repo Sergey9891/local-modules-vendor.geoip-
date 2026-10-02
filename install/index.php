@@ -1,9 +1,12 @@
 <?php
+declare(strict_types=1);
+
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\ModuleManager;
 use Bitrix\Highloadblock\HighloadBlockTable;
+use Bitrix\Main\Loader;
 
-Loc.loadMessages(__FILE__);
+Loc::loadMessages(__FILE__);
 
 class VendorGeoip extends CModule
 {
@@ -21,7 +24,7 @@ class VendorGeoip extends CModule
         $this->MODULE_VERSION = $arModuleVersion['VERSION'];
         $this->MODULE_VERSION_DATE = $arModuleVersion['VERSION_DATE'];
         $this->MODULE_NAME = 'GeoIP Lookup Module';
-        $this->MODULE_DESCRIPTION = 'Поиск GeoIP с горячим переключением провайдеров и кэшированием в HL';
+        $this->MODULE_DESCRIPTION = 'Поиск GeoIP с горячим переключением провайдеров и кэшированием в HL-блок посредством D7.';
     }
 
     public function DoInstall(): void
@@ -38,11 +41,10 @@ class VendorGeoip extends CModule
 
     private function createHighloadBlock(): void
     {
-        if (!Bitrix\Main\Loader::includeModule('highloadblock')) {
+        if (!Loader::includeModule('highloadblock')) {
             return;
         }
 
-        // Проверяем существование
         $existing = HighloadBlockTable::getList(['filter' => ['=NAME' => 'GeoIpHistory']])->fetch();
         if ($existing) {
             return;
@@ -73,7 +75,7 @@ class VendorGeoip extends CModule
 
     private function deleteHighloadBlock(): void
     {
-        if (!Bitrix\Main\Loader::includeModule('highloadblock')) {
+        if (!Loader::includeModule('highloadblock')) {
             return;
         }
         $hl = HighloadBlockTable::getList(['filter' => ['=NAME' => 'GeoIpHistory']])->fetch();
