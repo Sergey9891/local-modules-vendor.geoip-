@@ -1,21 +1,24 @@
 <?php
+declare(strict_types=1);
+
 namespace Vendor\Geoip\Entity;
 
 use Bitrix\Main\Loader;
 use Bitrix\Highloadblock\HighloadBlockTable;
 use Bitrix\Main\ORM\Data\DataManager;
 
-/**
- * Класс-прослойка для динамического получения ORM Highload-блока
- */
 class GeoIpHistoryTable
 {
     private static ?string $className = null;
 
+    /**
+     * Динамически возвращает скомпилированный класс ORM для работы с HL-блоком истории
+     */
     public static function getEntity(): ?DataManager
     {
         if (self::$className !== null) {
-            return new self::$className();
+            $class = self::$className;
+            return new $class();
         }
 
         if (!Loader::includeModule('highloadblock')) {
@@ -33,6 +36,7 @@ class GeoIpHistoryTable
         $entity = HighloadBlockTable::compileEntity($hlblock);
         self::$className = $entity->getDataClass();
 
-        return new self::$className();
+        $class = self::$className;
+        return new $class();
     }
 }
