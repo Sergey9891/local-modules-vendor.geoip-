@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Vendor\Geoip\Service;
 
 use Bitrix\Main\ArgumentException;
@@ -7,7 +9,6 @@ use Vendor\Geoip\Provider\GeoIpProviderInterface;
 
 class GeoIpService
 {
-    /** @var GeoIpProviderInterface[] */
     private array $providers = [];
 
     public function __construct(array $providers)
@@ -20,39 +21,38 @@ class GeoIpService
     }
 
     /**
-     * Главный сценарий выполнения поиска
+     * Основной сценарий выполнения поиска
      */
     public function handle(string $ip): array
     {
         if (!filter_var($ip, FILTER_VALIDATE_IP)) {
-            throw new ArgumentException('Передан некорректный IP-адрес');
+            throw new ArgumentException('Передан некорректный формат IP-адреса.');
         }
 
-        // 1. Поиск в HL блоке
+        // Пытаемся получить данные из базы данных (HL-блок)
         $localData = $this->getFromHistory($ip);
         if ($localData) {
             $localData['SOURCE'] = 'Database (HL-Block)';
             return $localData;
         }
 
-        // 2. Горячее переключение провайдеров
+        // 2. Горячее переключение внешних API
         foreach ($this->providers as $provider) {
             try {
                 $geoData = $provider->lookup($ip);
                 if ($geoData) {
                     // 3. Запись в БД при успешном ответе внешнего сервиса
                     $this->saveToHistory($ip, $geoData, $provider->getName());
-                    
                     $geoData['SOURCE'] = 'API (' . $provider->getName() . ')';
                     return $geoData;
                 }
             } catch (\Throwable $e) {
-                // Логируем ошибку конкретного провайдера и идем дальше (горячее переключение)
+                // Обрабатываем ошибку конкретного API и переходим к следующему в цепочке
                 continue;
             }
         }
 
-        throw new \RuntimeException('Все GeoIP провайдеры недоступны или вернули ошибку.');
+        throw new \RuntimeException('Все доступные GeoIP сервис-провайдеры вернули ошибку или недоступны.');
     }
 
     private function getFromHistory(string $ip): ?array
@@ -69,9 +69,9 @@ class GeoIpService
 
         if ($row) {
             return [
-                'country' => $row['UF_COUNTRY'],
-                'city'    => $row['UF_CITY'],
-                'provider'=> $row['UF_PROVIDER']
+                'country' => (string)$row['UF_COUNTRY'],
+                'city'    => (string)$row['UF_CITY'],
+                'provider'=> (string)$row['UF_PROVIDER']
             ];
         }
 
